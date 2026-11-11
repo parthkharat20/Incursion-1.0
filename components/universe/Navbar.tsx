@@ -11,9 +11,14 @@ export default function Navbar() {
   return (
     <header className="universe-navbar">
       {/* Brand */}
-      <Link href="/universe" className="universe-nav-brand" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-        <img src="/gdg-logo.svg" alt="GDG on Campus Logo" style={{ height: '24px', width: 'auto', display: 'block' }} />
-        <span className="universe-nav-title">INCURSION 2027</span>
+      <Link href="/universe" className="universe-nav-brand">
+        <img src="/gdg-logo.svg" alt="GDG on Campus Logo" className="universe-nav-logo" />
+        <span className="universe-nav-collab" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M2.5 2.5l11 11M13.5 2.5l-11 11" />
+          </svg>
+        </span>
+        <img src="/incursion-logo.webp" alt="Incursion" className="universe-nav-incursion-logo" />
       </Link>
 
       {/* Desktop Nav Links */}
@@ -23,7 +28,6 @@ export default function Navbar() {
         <a href="#schedule">Schedule</a>
         <a href="#prizes">Prizes</a>
         <a href="#sponsors">Sponsors</a>
-        <a href="#faq">FAQ</a>
         <Link href="/" className="universe-nav-replay">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" width="12" height="12">
             <path d="M6 3L1 8l5 5M1 8h14" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -36,14 +40,11 @@ export default function Navbar() {
       <div className="universe-nav-actions">
         <AudioPlayer />
         <a
-          href={REGISTER_URL || ''}
+          href={REGISTER_URL || '#schedule'}
           target={REGISTER_URL ? '_blank' : undefined}
           rel={REGISTER_URL ? 'noopener noreferrer' : undefined}
-          onClick={(e) => {
-            if (!REGISTER_URL) e.preventDefault();
-          }}
           className="universe-nav-btn"
-          title={REGISTER_URL ? 'Register Now' : 'Registration opening soon on Unstop'}
+          title={REGISTER_URL ? 'Register Now on Unstop' : 'Registrations opening soon'}
         >
           <span>Register Now</span>
           <svg viewBox="0 0 18 8" fill="none" stroke="currentColor" width="14" height="8">
@@ -75,18 +76,14 @@ export default function Navbar() {
         <a href="#schedule" onClick={() => setMobileOpen(false)}>Schedule</a>
         <a href="#prizes" onClick={() => setMobileOpen(false)}>Prizes</a>
         <a href="#sponsors" onClick={() => setMobileOpen(false)}>Sponsors</a>
-        <a href="#faq" onClick={() => setMobileOpen(false)}>FAQ</a>
         <Link href="/" onClick={() => setMobileOpen(false)} style={{ color: 'var(--em)' }}>
           ← Replay Film Experience
         </Link>
         <a
-          href={REGISTER_URL || ''}
+          href={REGISTER_URL || '#schedule'}
           target={REGISTER_URL ? '_blank' : undefined}
           rel={REGISTER_URL ? 'noopener noreferrer' : undefined}
-          onClick={(e) => {
-            if (!REGISTER_URL) e.preventDefault();
-            setMobileOpen(false);
-          }}
+          onClick={() => setMobileOpen(false)}
           className="universe-nav-btn"
           style={{ textAlign: 'center', justifyContent: 'center', marginTop: '10px' }}
         >

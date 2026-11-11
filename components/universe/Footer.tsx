@@ -11,6 +11,13 @@ export default function Footer() {
   return (
     <footer className="universe-footer">
       <div className="universe-container">
+        {/* Assemble Banner Quote */}
+        <div className="universe-assemble-banner">
+          <div className="assemble-text">
+            THERE WILL COME A DAY WHEN ALL TIMELINES CONVERGE. THAT DAY IS DOOMSDAY.
+          </div>
+        </div>
+
         <div className="universe-footer-grid">
           {/* Column 1: Brand & Theme */}
           <div>
@@ -18,7 +25,7 @@ export default function Footer() {
               <div className="universe-footer-logo-pair">
                 <img
                   className="universe-footer-incursion-logo-slot"
-                  src="/media/incursion_logo.svg"
+                  src="/incursion-logo.webp"
                   alt="Incursion logo"
                 />
                 <span className="universe-footer-logo-divider" aria-hidden="true" />
@@ -29,57 +36,68 @@ export default function Footer() {
               </Link>
             </div>
             <p className="universe-footer-desc">
-              National-level student hackathon organized by GDG on Campus,
+              National-level 24-hour student hackathon organized by GDG on Campus,
               Dr. D. Y. Patil Institute of Technology, Pimpri, Pune.
             </p>
             <div className="universe-footer-tagline">
-              30–31 January 2027 • Theme: &ldquo;Doomsday Times Run Out&rdquo;
+              30–31 January 2027 // Theme: &ldquo;Doomsday Times Run Out&rdquo;
             </div>
           </div>
 
           {/* Column 2: Navigation */}
           <div>
-            <div className="universe-footer-col-title">Navigation</div>
+            <div className="universe-footer-col-title">Command Navigation</div>
             <ul className="universe-footer-links">
               <li><a href="#about">About Event</a></li>
               <li><a href="#tracks">Hackathon Tracks</a></li>
-              <li><a href="#schedule">Timeline & Schedule</a></li>
-              <li><a href="#prizes">Prize Pool & Perks</a></li>
-              <li><a href="#sponsors">Partners & Sponsors</a></li>
-              <li><a href="#faq">FAQ</a></li>
+              <li><a href="#schedule">Timeline &amp; Schedule</a></li>
+              <li><a href="#prizes">Prize Pool (₹2,00,000)</a></li>
+              <li><a href="#sponsors">Partners &amp; Sponsors</a></li>
             </ul>
           </div>
 
           {/* Column 3: Transmission */}
           <div>
-            <div className="universe-footer-col-title">Transmission</div>
+            <div className="universe-footer-col-title">Mission Transmission</div>
             <ul className="universe-footer-links">
               <li>
                 <a
-                  href={REGISTER_URL || ''}
+                  href={REGISTER_URL || '#schedule'}
                   target={REGISTER_URL ? '_blank' : undefined}
                   rel={REGISTER_URL ? 'noopener noreferrer' : undefined}
-                  onClick={(e) => {
-                    if (!REGISTER_URL) e.preventDefault();
-                  }}
-                  title={REGISTER_URL ? 'Unstop Registration' : 'Registration opening soon on Unstop'}
+                  title={REGISTER_URL ? 'Registration Portal on Unstop' : 'Registrations opening soon'}
                 >
-                  Registration Portal (Unstop)
+                  Registration Portal (Unstop) ↗
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://discord.gg/QYQZBEmgQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Incursion Discord Community"
+                >
+                  Discord: Join Server ↗
                 </a>
               </li>
               <li>
                 <a href="https://www.instagram.com/gdg.dit" target="_blank" rel="noopener noreferrer">
-                  Instagram: @gdg.dit
+                  Instagram: @gdg.dit ↗
                 </a>
               </li>
               <li>
                 <a href="https://www.linkedin.com/company/gdg-dit/" target="_blank" rel="noopener noreferrer">
-                  LinkedIn: GDG DIT
+                  LinkedIn: GDG DIT ↗
                 </a>
               </li>
               <li>
                 <a href="mailto:gdg.dit@dypvp.edu.in">
                   Email: gdg.dit@dypvp.edu.in
+                </a>
+              </li>
+              <li>
+                <a href="https://discord.gg/QYQZBEmgQ" target="_blank" rel="noopener noreferrer">
+                  Join our Discord
                 </a>
               </li>
               <li className="universe-footer-contact">
@@ -107,7 +125,7 @@ export default function Footer() {
 
           {/* Column 4: Campus Map */}
           <div className="universe-footer-map-column">
-            <div className="universe-footer-col-title">Campus Location</div>
+            <div className="universe-footer-col-title">Campus Operations Base</div>
             <div className="universe-footer-map">
               <iframe
                 title="Dr. D. Y. Patil Institute of Technology campus map"
@@ -131,14 +149,15 @@ export default function Footer() {
         <div className="universe-footer-bottom">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <img src="/gdg-logo.svg" alt="GDG Logo" style={{ height: '16px', width: 'auto' }} />
-            <span>© 2027 INCURSION • GDG on Campus, Dr. D. Y. Patil Institute of Technology, Pimpri, Pune.</span>
+            <span>© 2027 INCURSION // GDG on Campus, Dr. D. Y. Patil Institute of Technology, Pimpri, Pune.</span>
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <span>24 Hours National Level Hackathon</span>
+            <span>24 Hours National Hackathon</span>
             <span>DYPIT Pune</span>
           </div>
         </div>
       </div>
+
       <button
         type="button"
         className="universe-floating-top"

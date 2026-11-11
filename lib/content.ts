@@ -1,46 +1,79 @@
 // @ts-nocheck
 
 // Edit the schedule and registration destination here.
-// Source of truth: incursion-2027-content.md
-export const REGISTER_URL = process.env.NEXT_PUBLIC_REGISTER_URL || '';
+// Source of truth: incursion-2027-content.md & EVENT TIMELINE & MILESTONES ROADMAP
+export const REGISTER_URL =
+  process.env.NEXT_PUBLIC_REGISTER_URL ||
+  'https://unstop.com/o/ZpWmr7H?lb=AmqFZlYX&utm_medium=Share&utm_source=online_coding_challenge&utm_campaign=Tejasnal6847';
+
 export const TIMELINE = [
   {
-    t: 'Registration & Idea Submission',
-    d: '9 November – 5 December 2026',
-    x: 'National registration and team formation. Ideas submitted on the platform.',
+    t: 'Registrations Window',
+    phase: 'Phase 1 // Registration',
+    tag: 'Updated Start Date',
+    d: '11 November – 5 December 2026',
+    x: 'National student team registrations (2 to 4 members).',
     img: { f: 0 },
     ic: { f: 0, z: '420%', p: '4% 45%' },
   },
   {
-    t: 'Submission Closes',
-    d: '5 December 2026',
-    x: 'Registration and online idea submission officially closes nationwide.',
+    t: 'PPT Submission Round',
+    phase: 'Phase 2 // Ideation',
+    tag: 'Proposal Round',
+    d: '6 – 12 December 2026',
+    x: 'Submission of solution deck & proposed architecture.',
     img: { f: 1 },
     ic: { f: 1, z: '420%', p: '56% 46%' },
   },
   {
-    t: 'Jury Evaluation & Screening',
-    d: '6 December 2026 – 5 January 2027',
-    x: 'Eligibility screening and structured jury evaluation of all submitted solutions.',
+    t: 'PPT Evaluation',
+    phase: 'Phase 2 // Screening',
+    tag: 'Expert Review',
+    d: '13 – 19 December 2026',
+    x: 'Rigorous scoring by panel of industry & faculty judges.',
     img: { f: 2 },
     ic: { f: 2, z: '420%', p: '50% 50%' },
   },
   {
-    t: 'Top 50 Finalists Announced',
-    d: '5 January 2027',
-    x: 'Top 50 teams shortlisted, plus waitlist, for the offline finale.',
+    t: 'Video Prototype Submission',
+    phase: 'Phase 3 // Prototyping',
+    tag: 'Working Demo',
+    d: '20 – 25 December 2026',
+    x: 'Working prototype video demo (3–5 mins) & GitHub repo.',
     img: { f: 3 },
     ic: { f: 3, z: '420%', p: '50% 52%' },
   },
   {
-    t: 'Grand Finale',
-    d: '30–31 January 2027 · DYPIT Campus, Pune',
-    x: 'Build sprint, mentor checkpoints, demos, jury review, and awards ceremony.',
+    t: 'Prototype Evaluation',
+    phase: 'Phase 3 // Audit',
+    tag: 'Code Review',
+    d: '25 December 2026 – 5 January 2027',
+    x: 'In-depth codebase audit & technical assessment.',
+    img: { f: 1 },
+    ic: { f: 1, z: '420%', p: '50% 50%' },
+  },
+  {
+    t: 'Result Announcement',
+    phase: 'Phase 4 // Finalists',
+    tag: 'Offline Invite',
+    d: '6 January 2027',
+    x: 'Declaration of Grand Finalists across India.',
+    img: { f: 2 },
+    ic: { f: 2, z: '420%', p: '50% 52%' },
+  },
+  {
+    t: 'Grand Finale - On Campus',
+    phase: 'Phase 4 // Grand Finale',
+    tag: '24H National Finale',
+    d: '30–31 January 2027 // DYPIT Campus, Pune',
+    x: '24 Hours non-stop hackathon on campus at DIT Pimpri.',
     img: { url: '/media/doom-throne.webp', z: '190%', p: '50% 58%' },
     ic: { url: '/media/doom-closeup.webp', z: '390%', p: '52% 38%' },
   },
 ];
+
 export const STILLS = ["/media/timeline-1.webp", "/media/timeline-2.webp", "/media/timeline-3.webp", "/media/timeline-4.webp"];
+
 export function imageStyle(image) {
   const sources = { w: '/media/doom-throne.webp', c: '/media/doom-closeup.webp' };
   return {

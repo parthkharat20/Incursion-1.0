@@ -12,7 +12,7 @@
 
 ## ⚡ The event
 
-INCURSION 2027 is a national-level student hackathon organized by **GDG on Campus, Dr. D. Y. Patil Institute of Technology, Pimpri, Pune**.
+INCURSION 2027 is a national-level Event organized by **GDG on Campus, Dr. D. Y. Patil Institute of Technology, Pimpri, Pune**.
 
 > **Theme:** “Doomsday Times Run Out”
 

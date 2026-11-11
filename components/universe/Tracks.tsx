@@ -1,82 +1,149 @@
 'use client';
 
-const TRACKS = [
+import {
+  Cpu,
+  ShieldAlert,
+  Radio,
+  Landmark,
+  Network,
+  Sparkles,
+} from 'lucide-react';
+
+export interface TrackItem {
+  id: string;
+  number: string;
+  name: string;
+  tag: string;
+  brief: string;
+  focusVectors: string[];
+  icon: React.ReactNode;
+  accentColor: 'emerald' | 'gold';
+}
+
+const TRACKS: TrackItem[] = [
   {
-    id: 'TRACK 01',
-    name: 'Rogue Protocol',
-    tag: 'AI & Agentic Systems',
-    description:
-      'Architect autonomous AI agents, intelligent multilingual assistants, process automation pipelines, and cognitive models designed to tackle complex decision-making systems.',
-    focusAreas: ['AI Agents', 'Multilingual Assistants', 'Automation', 'Intelligent Assistants'],
+    id: 'SECTOR 01',
+    number: '01',
+    name: 'ROGUE PROTOCOL',
+    tag: 'AI & AGENTIC SYSTEMS',
+    accentColor: 'emerald',
+    brief:
+      'Deploy autonomous synthetic agents and multi-modal cognitive pipelines engineered for high-volatility decision making.',
+    focusVectors: ['AI Agents', 'Multilingual AI', 'Process Automation', 'Cognitive Reasoning'],
+    icon: <Cpu className="w-6 h-6 text-emerald-400" />,
   },
   {
-    id: 'TRACK 02',
-    name: 'Firewall Zero',
-    tag: 'Cybersecurity & FinTech',
-    description:
-      'Engineer robust threat detection engines, scam and fraud mitigation shields, privacy-preserving identities, modern payment layers, and inclusive financial tooling.',
-    focusAreas: ['Threat Detection', 'Fraud & Scams', 'Privacy & Identity', 'Payments', 'Financial Inclusion'],
+    id: 'SECTOR 02',
+    number: '02',
+    name: 'FIREWALL ZERO',
+    tag: 'CYBERSECURITY & FINTECH',
+    accentColor: 'emerald',
+    brief:
+      'Fortify zero-trust financial rails, neutralize real-time threat vectors, and secure digital identity at national scale.',
+    focusVectors: ['Threat Detection', 'Fraud Mitigation', 'Zero-Knowledge ID', 'Resilient Payments'],
+    icon: <ShieldAlert className="w-6 h-6 text-emerald-400" />,
   },
   {
-    id: 'TRACK 03',
-    name: 'Final Hour',
-    tag: 'Open Innovation',
-    description:
-      'Tackle pressing existential and humanitarian frontiers spanning climate resilience, healthcare, emergency response, disaster management, agriculture, and space exploration.',
-    focusAreas: ['Climate Intelligence', 'Health & MedTech', 'Disaster & Safety', 'Agriculture & Space'],
+    id: 'SECTOR 03',
+    number: '03',
+    name: 'FINAL HOUR',
+    tag: 'OPEN INNOVATION',
+    accentColor: 'emerald',
+    brief:
+      'Engineer breakthrough survival and resilience systems across climate, emergency response, medtech, and orbital tech.',
+    focusVectors: ['Climate Tech', 'Health & MedTech', 'Disaster Triage', 'Space & Hardware'],
+    icon: <Radio className="w-6 h-6 text-emerald-400" />,
   },
   {
-    id: 'TRACK 04',
-    name: 'Glass Wall',
-    tag: 'GovTech & Transparent Governance',
-    description:
-      'Create high-accountability public service platforms, transparent civic workflows, citizen grievance redressal mechanisms, and integrity audits for open governance.',
-    focusAreas: ['Transparency', 'Public Services', 'Grievances Redressal', 'Accountability'],
+    id: 'SECTOR 04',
+    number: '04',
+    name: 'GLASS WALL',
+    tag: 'GOVTECH & GOVERNANCE',
+    accentColor: 'emerald',
+    brief:
+      'Build tamper-proof civic infrastructure for radical public transparency, automated grievance redressal, and institutional trust.',
+    focusVectors: ['Public Transparency', 'Automated Redressal', 'Immutable Audit', 'Open Civic APIs'],
+    icon: <Landmark className="w-6 h-6 text-emerald-400" />,
   },
   {
-    id: 'TRACK 05',
-    name: 'Survival City',
-    tag: 'Smart Cities & Civic Services',
-    description:
-      'Reimagine modern urban infrastructure with smart mobility networks, traffic intelligence, water conservation solutions, and responsive civic utilities.',
-    focusAreas: ['Transport & Mobility', 'Traffic Intelligence', 'Water Management', 'Civic Technology'],
+    id: 'SECTOR 05',
+    number: '05',
+    name: 'SURVIVAL CITY',
+    tag: 'SMART CITIES & CIVIC TECH',
+    accentColor: 'emerald',
+    brief:
+      'Optimize urban lifelines—intelligent traffic grids, water telemetry, distributed sensor networks, and emergency civic response.',
+    focusVectors: ['Smart Transport', 'Traffic Telemetry', 'Water Grid Sensors', 'Civic Logistics'],
+    icon: <Network className="w-6 h-6 text-emerald-400" />,
   },
 ];
 
 export default function Tracks() {
   return (
-    <section id="tracks" className="universe-section">
+    <section id="tracks" className="universe-section relative">
       <div className="universe-container">
-        <div className="universe-section-header">
-          <div className="universe-eyebrow">Domains & Tracks</div>
-          <h2 className="universe-section-title">Choose Your Battleground</h2>
+        {/* Section Header */}
+        <div className="doom-tracks-header">
+          <div className="universe-eyebrow">
+            <Sparkles className="inline-block w-3.5 h-3.5 mr-1 text-emerald-400" />
+            Battleground Domains // Latverian Incursion Deck
+          </div>
+
+          <h2 className="universe-section-title">The 5 Incursion Chambers</h2>
+
           <p className="universe-section-desc">
-            Broad tracks are published now. Detailed problem statements will be revealed at kickoff on
-            30 January 2027. Each track carries a dedicated ₹5,000 Best Track Winner award.
+            Five operational battlegrounds engineered for high-impact innovation across agentic intelligence, zero-trust security, urban tech, and open frontiers.
           </p>
         </div>
 
-        <div className="universe-grid-2">
-          {TRACKS.map((track) => (
-            <div key={track.id} className="universe-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="universe-tag">{track.tag}</span>
-                <span style={{ fontFamily: 'monospace', color: 'var(--mute)', fontSize: '13px' }}>
-                  {track.id}
-                </span>
-              </div>
-              <h3 className="universe-card-title">{track.name}</h3>
-              <p className="universe-card-desc">{track.description}</p>
+        {/* 3x2 Tactical Bento Matrix - Bespoke Green + Gold Doctor Doom Theme */}
+        <div className="doom-cards-grid">
+          {TRACKS.map((track) => {
+            const isGold = track.accentColor === 'gold';
 
-              <div className="universe-focus-tags">
-                {track.focusAreas.map((area) => (
-                  <span key={area} className="universe-focus-tag">
-                    {area}
-                  </span>
-                ))}
+            return (
+              <div
+                key={track.id}
+                className={`doom-card ${isGold ? 'doom-card-gold' : ''}`}
+              >
+                {/* Tactical Bevel Corners */}
+                <span className="doom-corner tc-tl" />
+                <span className="doom-corner tc-tr" />
+                <span className="doom-corner tc-bl" />
+                <span className="doom-corner tc-br" />
+
+                {/* Card Top: Sector ID */}
+                <div className="doom-card-top">
+                  <div className="doom-sector-badge">
+                    <span className="doom-dot" />
+                    <span>{track.id}</span>
+                  </div>
+                </div>
+
+                {/* Card Identity */}
+                <div className="doom-card-identity">
+                  <div className="doom-card-icon">{track.icon}</div>
+                  <div>
+                    <h3 className="doom-card-title">{track.name}</h3>
+                    <div className="doom-card-tag">{track.tag}</div>
+                  </div>
+                </div>
+
+                {/* Mission Brief */}
+                <p className="doom-card-brief">{track.brief}</p>
+
+                {/* Focus Vector Badges */}
+                <div className="doom-vectors-wrap">
+                  {track.focusVectors.map((v) => (
+                    <span key={v} className="doom-vector-pill">
+                      <span className="pill-dot" />
+                      <span>{v}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -19,14 +19,16 @@
 }
 
 html:has(.universe-page) {
-  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+  -webkit-overflow-scrolling: touch;
 }
 
 .universe-content > .universe-hero,
 .universe-content > .universe-section,
 .universe-content > .universe-footer {
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-stop: normal;
 }
 
 .universe-content {
@@ -109,6 +111,12 @@ html:has(.universe-page) {
   display: block;
 }
 
+@media (max-width: 768px) {
+  .universe-mask-stage {
+    display: none !important;
+  }
+}
+
 /* Navigation Bar */
 header.universe-navbar {
   position: fixed !important;
@@ -130,23 +138,53 @@ header.universe-navbar {
 }
 
 .universe-nav-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   height: 100%;
   text-decoration: none;
 }
 
-.universe-nav-title {
+.universe-nav-logo {
+  height: 24px;
+  width: auto;
+  display: block;
+}
+
+.universe-nav-collab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(233, 231, 224, 0.7);
+  line-height: 1;
+}
+
+.universe-nav-collab svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.universe-nav-incursion-logo {
+  height: 48px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+}
+
+.universe-nav-title,
+.universe-nav-year {
   display: inline-flex;
   align-items: center;
   line-height: 1;
   white-space: nowrap;
   font-family: var(--serif);
   font-style: italic;
-  font-size: 28px;
-  letter-spacing: 0.04em;
-  color: var(--ink);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: rgba(233, 231, 224, 0.88);
+  overflow: visible;
 }
 
 .universe-nav-links {
@@ -383,17 +421,23 @@ header.universe-navbar {
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(48px, 8vw, 96px);
-  max-width: 980px;
+  max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 0.95;
+  line-height: 1.14;
   letter-spacing: 0.015em;
   color: var(--ink);
   margin-bottom: 32px;
   text-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+  overflow: visible;
 }
 
 .universe-hero-title-accent {
+  display: inline-block;
+  padding-top: 0.16em;
+  padding-bottom: 0.08em;
+  line-height: 1.18;
+  overflow: visible;
   background: linear-gradient(135deg, #f3f0e7 0%, #d7c398 50%, #9b7a42 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -743,10 +787,19 @@ header.universe-navbar {
 }
 
 .universe-prize-card.highlight {
-  border-color: var(--em);
-  background: rgba(183, 155, 104, 0.04);
-  box-shadow: 0 0 40px rgba(183, 155, 104, 0.15);
-  transform: translateY(-8px);
+  border-color: #ffd700;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, rgba(8, 12, 10, 0.85) 60%);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.22), 0 20px 40px rgba(0, 0, 0, 0.8);
+  transform: translateY(-12px);
+}
+
+.universe-prize-card.highlight .universe-prize-val {
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.universe-prize-card.highlight .tactical-corner {
+  border-color: #ffd700;
 }
 
 .universe-prize-rank {
@@ -805,6 +858,17 @@ header.universe-navbar {
 
 .universe-prize-item-bullet {
   color: var(--em);
+}
+
+.universe-prize-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3fe08e;
+  box-shadow: 0 0 6px #3fe08e;
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 4px;
 }
 
 /* FAQ Accordion */
@@ -1091,6 +1155,19 @@ footer.universe-footer {
 }
 
 @media (max-width: 768px) {
+  html:has(.universe-page) {
+    scroll-snap-type: none !important;
+  }
+  .universe-content > .universe-hero,
+  .universe-content > .universe-section,
+  .universe-content > .universe-footer {
+    scroll-snap-align: none !important;
+    scroll-snap-stop: normal !important;
+  }
+  header.universe-navbar {
+    height: calc(64px + env(safe-area-inset-top, 0px)) !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+  }
   .universe-nav-links,
   .universe-nav-btn {
     display: none !important;
@@ -1148,8 +1225,26 @@ footer.universe-footer {
   .universe-footer-logo-divider {
     height: 48px;
   }
-  .universe-nav-title {
-    font-size: 24px;
+  .universe-nav-brand {
+    gap: 8px;
+  }
+  .universe-nav-logo {
+    height: 20px;
+    transform: none;
+  }
+  .universe-nav-collab svg {
+    width: 11px;
+    height: 11px;
+  }
+  .universe-nav-incursion-logo {
+    height: 36px;
+    transform: none;
+  }
+  .universe-nav-title,
+  .universe-nav-year {
+    font-size: 14px;
+    line-height: 1.15;
+    overflow: visible;
   }
   .universe-hero-title {
     font-size: clamp(38px, 11vw, 56px);
@@ -1203,3 +1298,1474 @@ footer.universe-footer {
     gap: 12px;
   }
 }
+
+
+/* ==========================================================================
+   National-Level Incursion Portal Additions & Avengers: Doomsday Upgrades
+   ========================================================================== */
+
+/* Tactical Corner Crosshairs */
+.tactical-corner {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.25s ease;
+}
+.tactical-corner.tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid var(--em);
+  border-left: 2px solid var(--em);
+}
+.tactical-corner.tr {
+  top: 0;
+  right: 0;
+  border-top: 2px solid var(--em);
+  border-right: 2px solid var(--em);
+}
+.tactical-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid var(--em);
+  border-left: 2px solid var(--em);
+}
+.tactical-corner.br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid var(--em);
+  border-right: 2px solid var(--em);
+}
+.universe-card:hover .tactical-corner {
+  width: 10px;
+  height: 10px;
+  border-color: #bfffd6;
+}
+
+/* Navbar Enhancements */
+.universe-nav-badge-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-badge-live {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: #3fe08e;
+  color: #040605;
+  letter-spacing: 0.1em;
+  animation: pulse-dot 1.8s infinite;
+}
+
+/* Hero HUD & Telemetry */
+.universe-telemetry-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: rgba(63, 224, 142, 0.08);
+  border: 1px solid rgba(63, 224, 142, 0.25);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.universe-telemetry-text {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #3fe08e;
+  text-transform: uppercase;
+}
+.universe-dot-ping {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3fe08e;
+  box-shadow: 0 0 10px #3fe08e;
+  animation: pulse-dot 1.6s infinite ease-in-out;
+}
+.universe-btn-hologram {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-color: rgba(63, 224, 142, 0.4);
+}
+.universe-btn-hologram:hover {
+  border-color: #3fe08e;
+  background: rgba(63, 224, 142, 0.12);
+  box-shadow: 0 0 20px rgba(63, 224, 142, 0.3);
+}
+.btn-tag-pill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  background: #3fe08e;
+  color: #040605;
+  border-radius: 3px;
+  letter-spacing: 0.1em;
+}
+
+/* About / Dossier Metrics Bar */
+.universe-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.universe-meta-pill {
+  font-size: 11px;
+  font-family: monospace;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--mute);
+}
+.universe-dossier-metrics {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: center;
+  margin-top: 48px;
+  padding: 24px 32px;
+  background: rgba(8, 12, 10, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(233, 231, 224, 0.15);
+  border-radius: 8px;
+}
+.dossier-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.dossier-val {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(24px, 3.5vw, 36px);
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+}
+.dossier-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--em);
+  margin-top: 6px;
+  font-family: monospace;
+}
+.dossier-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(233, 231, 224, 0.15);
+}
+
+/* Tracks Header & Bounty Chips */
+.universe-track-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.universe-track-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.universe-track-left .universe-tag {
+  margin-bottom: 0;
+}
+.universe-track-id {
+  font-family: monospace;
+  color: var(--mute);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+.universe-track-bounty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(63, 224, 142, 0.12);
+  border: 1px solid rgba(63, 224, 142, 0.35);
+  color: #3fe08e;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bounty-spark {
+  color: #3fe08e;
+}
+.universe-track-title {
+  margin-bottom: 10px;
+}
+
+/* Schedule Dual Tabs & Agenda */
+.universe-tab-switch {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.universe-tab-btn {
+  padding: 9px 20px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--mute);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.universe-tab-btn:hover {
+  color: #ffffff;
+}
+.universe-tab-btn.active {
+  background: var(--em);
+  color: #040605;
+  box-shadow: 0 0 15px rgba(183, 155, 104, 0.3);
+}
+
+.universe-timeline-highlight {
+  font-size: 13px;
+  color: var(--em);
+  margin-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.universe-day-selector {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.universe-day-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 12, 10, 0.6);
+  color: var(--mute);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.universe-day-btn span {
+  font-size: 15px;
+  font-weight: 700;
+}
+.universe-day-btn small {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+.universe-day-btn:hover {
+  border-color: rgba(63, 224, 142, 0.4);
+  color: #ffffff;
+}
+.universe-day-btn.active {
+  border-color: #3fe08e;
+  background: rgba(63, 224, 142, 0.1);
+  color: #3fe08e;
+  box-shadow: 0 0 20px rgba(63, 224, 142, 0.15);
+}
+
+.universe-agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.universe-agenda-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 18px 24px;
+}
+.universe-agenda-time {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #3fe08e;
+  min-width: 95px;
+  padding-top: 2px;
+  letter-spacing: 0.05em;
+}
+.universe-agenda-details {
+  flex: 1;
+}
+.universe-agenda-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.universe-agenda-desc {
+  font-size: 13.5px;
+  color: var(--mute);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Prizes Podium & Bounties Grid */
+.universe-podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 48px;
+}
+.universe-prize-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.universe-prize-sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--mute);
+  margin-top: -16px;
+  margin-bottom: 24px;
+  font-family: monospace;
+}
+.universe-prize-perks-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--mute);
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+.universe-bounties-wrapper {
+  margin-bottom: 48px;
+}
+.universe-bounties-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.universe-bounties-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 24px;
+  color: #ffffff;
+  margin-top: 4px;
+}
+.universe-bounties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+}
+.universe-bounty-card {
+  text-align: center;
+  padding: 22px 16px;
+  border-radius: 8px;
+}
+.bounty-badge-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--mute);
+  margin-bottom: 6px;
+  font-family: monospace;
+}
+.bounty-badge-tag.special {
+  color: #ffd700;
+}
+.bounty-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+.bounty-amount {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: #3fe08e;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.special-bounty .bounty-amount {
+  color: #ffd700;
+}
+.bounty-perk {
+  font-size: 11px;
+  color: var(--mute);
+  display: block;
+}
+
+/* Judging Framework Section */
+.universe-judging-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+}
+.universe-judging-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.universe-judging-icon {
+  font-size: 24px;
+}
+.universe-judging-weight {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #3fe08e;
+  background: rgba(63, 224, 142, 0.1);
+  padding: 2px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(63, 224, 142, 0.3);
+}
+.universe-judging-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.universe-judging-desc {
+  font-size: 14px;
+  color: var(--mute);
+  line-height: 1.55;
+  flex: 1;
+  margin-bottom: 18px;
+}
+.universe-judging-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.universe-judging-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--em), #3fe08e);
+  border-radius: 2px;
+}
+
+.universe-jury-strip {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  margin-top: 40px;
+  padding: 24px 32px;
+  background: rgba(8, 12, 10, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(233, 231, 224, 0.15);
+  border-radius: 8px;
+}
+.universe-jury-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 12px;
+}
+.universe-jury-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(26px, 3.5vw, 36px);
+  color: #3fe08e;
+  font-weight: 700;
+  line-height: 1;
+}
+.universe-jury-lbl {
+  font-size: 12px;
+  color: var(--mute);
+  margin-top: 6px;
+  line-height: 1.4;
+  max-width: 260px;
+}
+.universe-jury-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(233, 231, 224, 0.15);
+}
+
+/* FAQ Interactive Search & Category Filters */
+.universe-faq-search-wrap {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+.universe-faq-search {
+  width: 100%;
+  padding: 14px 44px 14px 44px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(233, 231, 224, 0.2);
+  border-radius: 30px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+.universe-faq-search:focus {
+  outline: none;
+  border-color: #3fe08e;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 16px rgba(63, 224, 142, 0.2);
+}
+.universe-faq-search-wrap .search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mute);
+  pointer-events: none;
+}
+.faq-clear-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--mute);
+  font-size: 14px;
+  cursor: pointer;
+}
+.universe-faq-categories {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.faq-cat-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.faq-cat-pill:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.faq-cat-pill.active {
+  background: rgba(63, 224, 142, 0.15);
+  border-color: #3fe08e;
+  color: #3fe08e;
+}
+
+/* Assemble Banner Quote */
+.universe-assemble-banner {
+  text-align: center;
+  padding: 44px 24px 44px;
+  margin-bottom: 48px;
+  border-bottom: 1px solid rgba(233, 231, 224, 0.12);
+  position: relative;
+}
+.assemble-text {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(20px, 2.6vw, 32px);
+  line-height: 1.35;
+  color: #f7faf8;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  max-width: 960px;
+  margin: 0 auto;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.9), 0 0 24px rgba(63, 224, 142, 0.2);
+}
+
+/* Media Queries for New Components */
+@media (max-width: 900px) {
+  .universe-dossier-metrics,
+  .universe-jury-strip {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .dossier-divider,
+  .universe-jury-divider {
+    display: none;
+  }
+  .universe-podium-grid {
+    grid-template-columns: 1fr;
+  }
+  .universe-prize-card.highlight {
+    transform: none;
+  }
+  .universe-telemetry-text {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .universe-bounties-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .universe-agenda-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .universe-agenda-time {
+    min-width: auto;
+  }
+  .universe-day-btn {
+    width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   Epic Incursion Chambers, Sacred Timeline Conduit & Tournament Grid
+   ========================================================================== */
+
+/* ==========================================================================
+   Doom-Themed Tactical Incursion Chambers (Bespoke Green + Gold)
+   ========================================================================== */
+
+.doom-tracks-header {
+  text-align: center;
+  margin-bottom: 44px;
+}
+
+.text-gold-highlight {
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.doom-cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* Bespoke Doom Card: Latverian Obsidian Glass */
+.doom-card {
+  position: relative;
+  flex: 0 1 calc(33.333% - 16px);
+  width: calc(33.333% - 16px);
+  min-width: 320px;
+  max-width: 390px;
+  border-radius: 16px;
+  background: rgba(8, 16, 12, 0.94);
+  border: 1px solid rgba(63, 224, 142, 0.28);
+  padding: 28px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 1080px) {
+  .doom-card {
+    flex: 0 1 calc(50% - 12px);
+    width: calc(50% - 12px);
+    max-width: 480px;
+  }
+}
+
+@media (max-width: 720px) {
+  .doom-card {
+    flex: 0 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.doom-card-gold {
+  background: rgba(16, 13, 6, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+/* Subtle Hover Effects ONLY — NEVER wash or flood card background! */
+.doom-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(63, 224, 142, 0.75);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.85), 0 0 24px rgba(63, 224, 142, 0.16);
+}
+
+.doom-card-gold:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 215, 0, 0.22);
+}
+
+/* Tactical Corner Accents */
+.doom-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.tc-tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid #3fe08e;
+  border-left: 2px solid #3fe08e;
+}
+
+.tc-tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid #ffd700;
+  border-right: 2px solid #ffd700;
+}
+
+.tc-bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid #ffd700;
+  border-left: 2px solid #ffd700;
+}
+
+.tc-br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid #3fe08e;
+  border-right: 2px solid #3fe08e;
+}
+
+.doom-card:hover .doom-corner {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Card Top: Sector ID */
+.doom-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.doom-sector-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  color: #3fe08e;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(6, 26, 17, 0.6);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(63, 224, 142, 0.3);
+}
+
+.doom-card-gold .doom-sector-badge {
+  color: #ffd700;
+  background: rgba(36, 28, 8, 0.6);
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.doom-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 6px #00ff88;
+  animation: beaconBlink 1.4s infinite ease-in-out;
+}
+
+.doom-card-gold .doom-dot {
+  background: #ffd700;
+  box-shadow: 0 0 6px #ffd700;
+}
+
+/* Card Identity */
+.doom-card-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+}
+
+.doom-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 35% 30%, #0d281a 0%, #030805 85%);
+  border: 1.5px solid rgba(63, 224, 142, 0.5);
+  box-shadow: 0 0 16px rgba(63, 224, 142, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.doom-card:hover .doom-card-icon {
+  transform: scale(1.08);
+  border-color: #00ff88;
+  box-shadow: 0 0 22px rgba(0, 255, 136, 0.4);
+}
+
+.doom-card-gold .doom-card-icon {
+  background: radial-gradient(circle at 35% 30%, #3a2e05 0%, #0a0802 85%);
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.25);
+}
+
+.doom-card-gold:hover .doom-card-icon {
+  border-color: #ffd700;
+  box-shadow: 0 0 22px rgba(255, 215, 0, 0.45);
+}
+
+.doom-card-title {
+  font-family: var(--serif, 'Playfair Display', serif);
+  font-style: italic;
+  font-size: 25px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+  margin: 0 0 4px;
+}
+
+.doom-card-tag {
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #3fe08e;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.doom-card-gold .doom-card-tag {
+  color: #ffd700;
+}
+
+.doom-card-brief {
+  font-size: 13.5px;
+  color: #94a3b8;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  border-left: 2px solid rgba(63, 224, 142, 0.45);
+  padding-left: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.doom-card-gold .doom-card-brief {
+  border-left-color: rgba(255, 215, 0, 0.5);
+  color: #cbd5e1;
+}
+
+.doom-vectors-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  position: relative;
+  z-index: 2;
+}
+
+.doom-vector-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(8, 24, 16, 0.7);
+  border: 1px solid rgba(63, 224, 142, 0.25);
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.doom-vector-pill:hover {
+  background: rgba(13, 40, 26, 0.95);
+  border-color: #3fe08e;
+  color: #bfffd6;
+}
+
+.pill-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #3fe08e;
+}
+
+.doom-card-gold .doom-vector-pill {
+  background: rgba(28, 22, 6, 0.7);
+  border-color: rgba(255, 215, 0, 0.25);
+}
+
+.doom-card-gold .doom-vector-pill:hover {
+  background: rgba(45, 35, 10, 0.95);
+  border-color: #ffd700;
+  color: #fff4b8;
+}
+
+.doom-card-gold .pill-dot {
+  background: #ffd700;
+}
+
+
+/* ==========================================================================
+   Professional Serpentine Winding Timeline (Curved Mission Map)
+   ========================================================================== */
+
+.serpentine-timeline-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1080px;
+  margin: 40px auto 0;
+  padding: 20px 16px 60px;
+}
+
+.serpentine-svg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.serpentine-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.serpentine-laser-pulse {
+  stroke-dasharray: 100 360;
+  stroke-dashoffset: 0;
+  animation: serpentine-laser-flow 7s linear infinite;
+}
+
+@keyframes serpentine-laser-flow {
+  0% {
+    stroke-dashoffset: 1800;
+  }
+  100% {
+    stroke-dashoffset: -1800;
+  }
+}
+
+.serpentine-milestones {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+.serpentine-milestone-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.row-node-left {
+  padding-left: calc(22% - 36px);
+  justify-content: flex-start;
+  gap: 32px;
+}
+
+.row-node-right {
+  padding-right: calc(22% - 36px);
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 32px;
+}
+
+.row-grand-finale {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  gap: 28px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Hover Dimming & Focusing Dynamics */
+.serpentine-milestone-row.milestone-focused {
+  transform: scale(1.02);
+  z-index: 10;
+}
+
+.serpentine-milestone-row.milestone-focused .serpentine-card {
+  border-color: #3fe08e !important;
+  box-shadow: 0 0 32px rgba(63, 224, 142, 0.35), 0 12px 30px rgba(0, 0, 0, 0.7);
+}
+
+.serpentine-milestone-row.milestone-focused .serpentine-waypoint .waypoint-core {
+  transform: scale(1.12);
+  box-shadow: 0 0 35px rgba(63, 224, 142, 0.8), inset 0 0 16px rgba(63, 224, 142, 0.5);
+}
+
+.serpentine-milestone-row.milestone-dimmed {
+  opacity: 0.38;
+  filter: grayscale(40%) blur(0.4px);
+  transition: all 0.35s ease;
+}
+
+/* Waypoint Emblems */
+.serpentine-waypoint {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.waypoint-core {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #0d281a 0%, #030805 85%);
+  border: 2.5px solid #3fe08e;
+  box-shadow: 0 0 20px rgba(63, 224, 142, 0.4), inset 0 0 10px rgba(63, 224, 142, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.waypoint-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.waypoint-ring.ring-1 {
+  inset: -7px;
+  border: 1.5px dashed rgba(63, 224, 142, 0.35);
+  animation: waypointRingSpin 20s linear infinite;
+}
+
+.waypoint-ring.ring-2 {
+  inset: -14px;
+  border: 1px solid rgba(63, 224, 142, 0.15);
+}
+
+@keyframes waypointRingSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.waypoint-num {
+  font-family: var(--mono, monospace);
+  font-size: 19px;
+  font-weight: 800;
+  color: #bfffd6;
+  letter-spacing: -0.02em;
+}
+
+.waypoint-icon {
+  width: 28px;
+  height: 28px;
+}
+
+/* Active Live Waypoint (Stage 1) */
+.waypoint-live .waypoint-core {
+  border-color: #00ff88;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.65), inset 0 0 14px rgba(0, 255, 136, 0.4);
+  animation: waypointLivePulse 2.4s infinite ease-in-out;
+}
+
+@keyframes waypointLivePulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5), inset 0 0 10px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 38px rgba(0, 255, 136, 0.85), inset 0 0 18px rgba(0, 255, 136, 0.5);
+    transform: scale(1.05);
+  }
+}
+
+/* Grand Finale Waypoint (Stage 7) */
+.waypoint-finale .waypoint-core {
+  width: 84px;
+  height: 84px;
+  border-color: #ffd700;
+  background: radial-gradient(circle at 35% 30%, #3a2e05 0%, #0a0802 85%);
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.6), inset 0 0 16px rgba(255, 215, 0, 0.4);
+}
+
+.waypoint-finale .waypoint-ring.ring-1 {
+  border-color: rgba(255, 215, 0, 0.4);
+}
+
+.waypoint-finale .waypoint-ring.ring-2 {
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+/* Waypoint Level Badge */
+.waypoint-level-badge {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #050a07;
+  border: 1px solid rgba(63, 224, 142, 0.4);
+  color: #3fe08e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  z-index: 3;
+}
+
+.waypoint-level-badge .badge-live {
+  color: #00ff88;
+  border-color: rgba(0, 255, 136, 0.7);
+}
+
+.waypoint-level-badge .badge-finale {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.7);
+}
+
+/* Serpentine Dossier Cards */
+.serpentine-card {
+  position: relative;
+  flex: 1;
+  max-width: 540px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: rgba(10, 18, 14, 0.88);
+  border: 1.5px solid rgba(63, 224, 142, 0.25);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+}
+
+.card-grand-finale {
+  max-width: 680px;
+  width: 100%;
+  border-color: rgba(255, 215, 0, 0.45);
+  background: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.08) 0%, rgba(10, 18, 14, 0.95) 75%);
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.18), 0 14px 34px rgba(0, 0, 0, 0.85);
+}
+
+.serpentine-card-layout {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.serpentine-thumb {
+  position: relative;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(63, 224, 142, 0.2);
+  min-height: 105px;
+  overflow: hidden;
+}
+
+.serpentine-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.serpentine-card-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.serpentine-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/* Agenda list for Finale tab */
+.universe-schedule-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.universe-agenda-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.agenda-time-col {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.agenda-time {
+  font-family: var(--mono, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.agenda-time-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3fe08e;
+  box-shadow: 0 0 6px #3fe08e;
+}
+
+.agenda-card {
+  padding: 16px 20px;
+  background: rgba(10, 18, 14, 0.75);
+  border: 1px solid rgba(63, 224, 142, 0.2);
+  border-radius: 10px;
+}
+
+.agenda-title {
+  font-family: var(--serif, 'Playfair Display', serif);
+  font-style: italic;
+  font-size: 18px;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+
+.agenda-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.45;
+}
+
+
+/* 3. Tournament Architecture Grid (About) */
+.universe-tournament-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.universe-tournament-card {
+  padding: 32px !important;
+  background: rgba(8, 12, 10, 0.65) !important;
+  border-radius: 12px;
+}
+.tournament-badge {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.tournament-badge.round-1 {
+  background: rgba(94, 197, 255, 0.12);
+  border: 1px solid rgba(94, 197, 255, 0.35);
+  color: #5ec5ff;
+}
+.tournament-badge.round-2 {
+  background: rgba(63, 224, 142, 0.15);
+  border: 1px solid rgba(63, 224, 142, 0.4);
+  color: #3fe08e;
+}
+.round-2-card {
+  border-color: rgba(63, 224, 142, 0.35) !important;
+  box-shadow: 0 0 30px rgba(63, 224, 142, 0.1) !important;
+}
+.tournament-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 26px;
+  color: #ffffff;
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+.tournament-desc {
+  font-size: 14.5px;
+  color: var(--mute);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.tournament-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tournament-filter-hub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.filter-line {
+  width: 2px;
+  height: 48px;
+  background: linear-gradient(180deg, transparent, #3fe08e, transparent);
+}
+.filter-badge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 20px;
+  background: #030704;
+  border: 1.5px solid #3fe08e;
+  border-radius: 50px;
+  box-shadow: 0 0 25px rgba(63, 224, 142, 0.35);
+}
+.filter-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50px;
+  border: 1px solid rgba(63, 224, 142, 0.4);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+.filter-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+.filter-sub {
+  font-family: monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: #3fe08e;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* Responsive Serpentine Timeline */
+@media (max-width: 768px) {
+  .serpentine-timeline-wrapper {
+    padding: 20px 0 40px;
+  }
+  .serpentine-milestones {
+    gap: 32px;
+  }
+  .serpentine-milestones::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    bottom: 40px;
+    left: 28px;
+    width: 2px;
+    background: linear-gradient(180deg, #3fe08e 0%, rgba(63, 224, 142, 0.3) 70%, #ffd700 100%);
+    z-index: 1;
+  }
+  .serpentine-milestone-row,
+  .row-node-left,
+  .row-node-right {
+    flex-direction: row !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+  .serpentine-waypoint {
+    width: 56px;
+    height: 56px;
+    margin-left: 0;
+  }
+  .waypoint-core {
+    width: 56px;
+    height: 56px;
+  }
+  .waypoint-num {
+    font-size: 16px;
+  }
+  .waypoint-icon {
+    width: 22px;
+    height: 22px;
+  }
+  .waypoint-level-badge {
+    display: none;
+  }
+  .serpentine-card {
+    max-width: 100%;
+    width: calc(100% - 72px);
+    padding: 16px;
+  }
+  .serpentine-card-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .serpentine-thumb {
+    height: 100px;
+  }
+  .row-grand-finale {
+    flex-direction: column !important;
+    align-items: center;
+    text-align: center;
+  }
+  .row-grand-finale .serpentine-waypoint {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .row-grand-finale .serpentine-card {
+    width: 100%;
+  }
+}
+
