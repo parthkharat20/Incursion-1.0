@@ -5,7 +5,8 @@ export default function BackgroundVideo() {
     <div className="universe-bg">
       <video
         id="timeline-bg-fixed"
-        src="/media/timeline-bg.mp4"
+        src="/media/intro.mp4"
+        poster="/media/avengers-countdown-bg.webp"
         autoPlay
         loop
         muted

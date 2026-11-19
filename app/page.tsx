@@ -6,7 +6,7 @@ const eventJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: 'INCURSION 2027',
-  description: 'National-level student hackathon organized by GDG on Campus, DYPIT Pune.',
+  description: 'National-level Event organized by GDG on Campus, DYPIT Pune.',
   startDate: '2027-01-30T08:00:00+05:30',
   endDate: '2027-01-31T16:00:00+05:30',
   eventStatus: 'https://schema.org/EventScheduled',

@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Event name | INCURSION 2027 |
-| Type | National-level 24-hour student hackathon |
+| Type | National-level 24-hour Event |
 | Organizer | GDG on Campus, Dr. D. Y. Patil Institute of Technology, Pimpri, Pune |
 | Dates | 30–31 January 2027 |
 | Venue | DYPIT campus, Pune |

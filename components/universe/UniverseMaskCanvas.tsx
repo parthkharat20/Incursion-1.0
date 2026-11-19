@@ -11,6 +11,11 @@ export default function UniverseMaskCanvas() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Only load and render the 3D model on desktop/website version; disabled on mobile
+    if (typeof window !== 'undefined' && (window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches)) {
+      return;
+    }
+
     const host = hostRef.current;
     const canvas = canvasRef.current;
     if (!host || !canvas) return;
@@ -39,12 +44,13 @@ export default function UniverseMaskCanvas() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 80);
 
-    const ambient = new THREE.AmbientLight(0x76827a, 1.35);
-    const rim = new THREE.DirectionalLight(0x3fe08e, 1.4);
-    rim.position.set(-3, 3, -4);
-    const key = new THREE.DirectionalLight(0xffdfba, 1.05);
+    // Boosted theatrical lighting for Doctor Doom
+    const ambient = new THREE.AmbientLight(0x8fa396, 1.8);
+    const rim = new THREE.DirectionalLight(0x3fe08e, 2.8);
+    rim.position.set(-3.5, 3.5, -4);
+    const key = new THREE.DirectionalLight(0xffdfba, 1.8);
     key.position.set(-2.6, 4, 5);
-    const torch = new THREE.PointLight(0xffa458, 1.1, 6.0, 2);
+    const torch = new THREE.PointLight(0x3fe08e, 2.2, 7.5, 2);
     scene.add(ambient, rim, key, torch);
 
     const targetRimColor = new THREE.Color(0x3fe08e);
@@ -68,9 +74,9 @@ export default function UniverseMaskCanvas() {
         envScene.add(mesh);
       };
 
-      panel(10, 5, [0, 9, 12], 0xffc890, 5.0);
-      panel(6, 8, [-12, 2, -6], 0x3fe08e, 3.2);
-      panel(8, 6, [11, 1, 4], 0x58c0ff, 2.0);
+      panel(12, 6, [0, 9, 12], 0xffdfb0, 6.0);
+      panel(8, 10, [-12, 2, -6], 0x3fe08e, 4.5);
+      panel(10, 8, [11, 1, 4], 0x58c0ff, 3.0);
 
       const pmrem = new THREE.PMREMGenerator(renderer);
       environmentTarget = pmrem.fromScene(envScene, 0.04);
@@ -87,15 +93,16 @@ export default function UniverseMaskCanvas() {
       if (disposed || !renderer) return;
       const width = Math.max(1, window.innerWidth);
       const height = Math.max(1, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.65));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
 
-      const widthFill = camera.aspect < 0.8 ? 1.05 : 0.84;
+      const widthFill = camera.aspect < 0.8 ? 0.95 : 0.80;
       const visibleHeight = Math.max(maskHeight / 0.67, (maskWidth / widthFill) / camera.aspect);
       camera.position.set(0, 0, visibleHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))));
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
+      updateScrollProgress();
     }
 
     function initializeRenderer() {
@@ -105,7 +112,7 @@ export default function UniverseMaskCanvas() {
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.toneMappingExposure = 1.35;
         scene.environment = makeEnvironment();
         resize();
         return true;
@@ -115,9 +122,21 @@ export default function UniverseMaskCanvas() {
       }
     }
 
+    let isScheduleInView = false;
+
     function updateScrollProgress() {
       const scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       scrollProgress = Math.max(0, Math.min(1, window.scrollY / scrollRange));
+
+      const scheduleEl = document.getElementById('schedule');
+      if (scheduleEl) {
+        const rect = scheduleEl.getBoundingClientRect();
+        // Fully hide the Doom 3D mask while viewing the timeline/schedule section
+        isScheduleInView = rect.top < window.innerHeight * 0.82 && rect.bottom > window.innerHeight * 0.18;
+      } else {
+        isScheduleInView = false;
+      }
+
       if (!running && inView && !document.hidden) startLoop();
     }
 
@@ -147,99 +166,79 @@ export default function UniverseMaskCanvas() {
         const mobile = width < 768;
         const visibleHeight = Math.max(maskHeight / 0.67, (maskWidth / (camera.aspect < 0.8 ? 1.05 : 0.84)) / camera.aspect);
 
-        // Section-mapped choreographies across normalized progress (0.0 to 1.0)
+        // Anchored continuously on the right flank (centered in hero on mobile)
         const p = scrollProgress;
-        const sideX = mobile ? visibleHeight * camera.aspect * 0.28 : visibleHeight * camera.aspect * 0.44;
+        const sideX = mobile ? 0 : visibleHeight * camera.aspect * 0.31;
 
-        let targetX = sideX;
-        let targetY = mobile ? visibleHeight * 0.04 : -0.05;
-        let targetZ = mobile ? -0.8 : 0;
-        let targetRotX = 0;
-        let targetRotY = -0.15;
-        let targetRotZ = 0;
-        let targetScale = mobile ? 0.56 : 0.78;
+        // In-place organic breathing levitation
+        const idleFloatY = reducedMotion ? 0 : Math.sin(seconds * 1.5) * 0.04;
+        const idleRotZ = reducedMotion ? 0 : Math.sin(seconds * 1.2) * 0.02;
+        const idleRotX = reducedMotion ? 0 : Math.sin(seconds * 1.7) * 0.015;
 
-        if (p < 0.16) {
-          // Hero Section (0.00 – 0.16): Floating on Right
-          targetX = sideX;
-          targetY = mobile ? 0.05 : -0.08;
-          targetRotY = -0.18;
-          targetScale = mobile ? 0.56 : 0.78;
-          targetRimColor.setHex(0x3fe08e); // Emerald
-        } else if (p < 0.36) {
-          // About Section (0.16 – 0.36): Glides to Left, 35° profile gazing toward text
-          const t = (p - 0.16) / 0.20;
-          targetX = THREE.MathUtils.lerp(sideX, -sideX, t);
-          targetY = THREE.MathUtils.lerp(-0.08, 0.12, t);
-          targetRotY = THREE.MathUtils.lerp(-0.18, 0.42, t);
-          targetRotX = THREE.MathUtils.lerp(0, -0.06, t);
-          targetScale = mobile ? 0.68 : 0.92;
-          targetRimColor.setHex(0x5ec5ff); // Cyan
-        } else if (p < 0.56) {
-          // Tracks Section (0.36 – 0.56): Rises toward Top-Right
-          const t = (p - 0.36) / 0.20;
-          targetX = THREE.MathUtils.lerp(-sideX, sideX * 0.95, t);
-          targetY = THREE.MathUtils.lerp(0.12, 0.22, t);
-          targetRotY = THREE.MathUtils.lerp(0.42, -0.35, t);
-          targetRotX = THREE.MathUtils.lerp(-0.06, 0.08, t);
-          targetScale = mobile ? 0.65 : 0.85;
-          targetRimColor.setHex(0x3fe08e); // GDG Green
-        } else if (p < 0.74) {
-          // Schedule Section (0.56 – 0.74): Sits in Center-Deep background
-          const t = (p - 0.56) / 0.18;
-          targetX = THREE.MathUtils.lerp(sideX * 0.95, 0, t);
-          targetY = THREE.MathUtils.lerp(0.22, -0.12, t);
-          targetZ = THREE.MathUtils.lerp(mobile ? -0.8 : 0, -1.8, t);
-          targetRotY = THREE.MathUtils.lerp(-0.35, 0, t);
-          targetRotX = 0;
-          targetScale = mobile ? 0.60 : 0.78;
-          targetRimColor.setHex(0x9d71ff); // Purple
-        } else if (p < 0.88) {
-          // Prizes Section (0.74 – 0.88): Lower-Right heroic angle, golden reflection
-          const t = (p - 0.74) / 0.14;
-          targetX = THREE.MathUtils.lerp(0, sideX * 0.85, t);
-          targetY = THREE.MathUtils.lerp(-0.12, -0.18, t);
-          targetZ = THREE.MathUtils.lerp(-1.8, 0.15, t);
-          targetRotX = THREE.MathUtils.lerp(0, 0.22, t);
-          targetRotY = THREE.MathUtils.lerp(0, -0.25, t);
-          targetScale = mobile ? 0.70 : 0.98;
-          targetRimColor.setHex(0xffc247); // Gold
+        const targetX = sideX;
+        const targetY = (mobile ? 0.32 : -0.02) + idleFloatY;
+        const targetZ = mobile ? -0.3 : 0.08;
+        const targetScale = mobile ? 0.70 : 0.94;
+
+        // Base angle facing slightly towards center content, with subtle section attitude shifts
+        let targetRotX = -0.02;
+        let targetRotY = mobile ? 0 : -0.22;
+        const targetRotZ = 0;
+
+        if (p < 0.35) {
+          // Hero / About: Latverian Emerald
+          targetRotX = -0.02;
+          targetRotY = mobile ? 0 : -0.24;
+          targetRimColor.setHex(0x3fe08e);
+        } else if (p < 0.60) {
+          // Tracks: Cosmic Cyan
+          targetRotX = -0.04;
+          targetRotY = mobile ? 0 : -0.20;
+          targetRimColor.setHex(0x5ec5ff);
+        } else if (p < 0.85) {
+          // Prizes: Vibranium Gold
+          targetRotX = 0.05;
+          targetRotY = mobile ? 0 : -0.24;
+          targetRimColor.setHex(0xffd700);
         } else {
-          // FAQ & Footer (0.88 – 1.00): Sinks deep into the cosmos
-          const t = Math.min(1, (p - 0.88) / 0.12);
-          targetX = THREE.MathUtils.lerp(sideX * 0.85, 0, t);
-          targetY = THREE.MathUtils.lerp(-0.18, -0.25, t);
-          targetZ = THREE.MathUtils.lerp(0.15, -2.8, t);
-          targetRotX = 0;
-          targetRotY = 0;
-          targetScale = mobile ? 0.55 : 0.70;
+          // Sponsors & Footer: Latverian Emerald
+          targetRotX = -0.02;
+          targetRotY = mobile ? 0 : -0.22;
           targetRimColor.setHex(0x3fe08e);
         }
 
-        const lerpFactor = reducedMotion ? 1 : 1 - Math.exp(-dt * 5.0);
+        // Bold, cinematic lighting continuously
+        ambient.intensity = THREE.MathUtils.lerp(ambient.intensity, 1.8, dt * 4.0);
+        rim.intensity = THREE.MathUtils.lerp(rim.intensity, 2.8, dt * 4.0);
+        key.intensity = THREE.MathUtils.lerp(key.intensity, 1.8, dt * 4.0);
+
+        const lerpFactor = reducedMotion ? 1 : 1 - Math.exp(-dt * 6.5);
         pivot.position.x += (targetX - pivot.position.x) * lerpFactor;
         pivot.position.y += (targetY - pivot.position.y) * lerpFactor;
         pivot.position.z += (targetZ - pivot.position.z) * lerpFactor;
         pivot.scale.setScalar(THREE.MathUtils.lerp(pivot.scale.x, targetScale, lerpFactor));
 
-        // Idle organic floating
-        const idleRotZ = reducedMotion ? 0 : Math.sin(seconds * 1.3) * 0.015;
-        const idleFloatY = reducedMotion ? 0 : Math.sin(seconds * 1.5) * 0.03;
-
-        pivot.rotation.x += (targetRotX - pointer.y * 0.05 - pivot.rotation.x) * lerpFactor;
-        pivot.rotation.y += (targetRotY + pointer.x * 0.12 - pivot.rotation.y) * lerpFactor;
+        // Interactive mouse tracking: Doom's gaze follows the cursor across the screen + in-place breathing
+        const lookAtX = pointer.y * 0.12;
+        const lookAtY = pointer.x * 0.20;
+        pivot.rotation.x += (targetRotX - lookAtX + idleRotX - pivot.rotation.x) * lerpFactor;
+        pivot.rotation.y += (targetRotY + lookAtY - pivot.rotation.y) * lerpFactor;
         pivot.rotation.z += (targetRotZ + idleRotZ - pivot.rotation.z) * lerpFactor;
-        pivot.position.y += idleFloatY * dt * 2.0;
 
         // Smooth color transition for rim light
-        currentRimColor.lerp(targetRimColor, 1 - Math.exp(-dt * 3.5));
+        currentRimColor.lerp(targetRimColor, 1 - Math.exp(-dt * 4.0));
         rim.color.copy(currentRimColor);
 
-        // Torch light tracking
-        targetLightPos.set(pivot.position.x + pointer.x * 0.9, pivot.position.y - pointer.y * 0.6 + 0.18, frontZ + 0.38);
-        torch.position.lerp(targetLightPos, 1 - Math.exp(-dt * 7.5));
-        const flicker = reducedMotion ? 1 : 1 + 0.035 * Math.sin(seconds * 12) + 0.02 * Math.sin(seconds * 22);
-        torch.intensity = 1.1 * flicker;
+        // Torch light tracking cursor with live atmospheric flicker
+        targetLightPos.set(pivot.position.x + pointer.x * 0.9, pivot.position.y - pointer.y * 0.6 + 0.25, frontZ + 0.45);
+        torch.position.lerp(targetLightPos, 1 - Math.exp(-dt * 7.0));
+        const flicker = reducedMotion ? 1 : 1 + 0.04 * Math.sin(seconds * 14) + 0.02 * Math.sin(seconds * 24);
+        torch.intensity = 2.2 * flicker;
+
+        // Continuously visible everywhere (100% opacity), smoothly fading out only when the timeline schedule is in view
+        const targetCanvasOpacity = isScheduleInView ? 0.0 : 1.0;
+        const currentCanvasOpacity = parseFloat(canvas.style.opacity || '1');
+        canvas.style.opacity = String(THREE.MathUtils.lerp(currentCanvasOpacity, targetCanvasOpacity, dt * 6.0));
       }
 
       renderer.render(scene, camera);
@@ -302,7 +301,9 @@ export default function UniverseMaskCanvas() {
           const materials = Array.isArray(object.material) ? object.material : [object.material];
           materials.forEach((mat) => {
             if (mat) {
-              mat.envMapIntensity = 0.75;
+              mat.envMapIntensity = 1.6;
+              mat.roughness = Math.min(mat.roughness || 0.4, 0.45);
+              mat.metalness = Math.max(mat.metalness || 0.8, 0.85);
               mat.needsUpdate = true;
             }
           });
@@ -320,13 +321,10 @@ export default function UniverseMaskCanvas() {
       loadMask();
     }
 
-    if ('ResizeObserver' in window) {
-      resizeObserver = new ResizeObserver(resize);
-      resizeObserver.observe(document.body);
-    } else {
-      window.addEventListener('resize', resize);
-    }
+    resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(host);
 
+    window.addEventListener('resize', resize, { passive: true });
     window.addEventListener('scroll', updateScrollProgress, { passive: true });
     window.addEventListener('pointermove', pointerMove, { passive: true });
     document.addEventListener('visibilitychange', visibilityChange);

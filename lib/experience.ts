@@ -64,19 +64,23 @@ export function createExperience(root) {
       el.style.visibility = o > 0.002 ? "visible" : "hidden";
     };
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const STORY_END = 25.0;
+  const isTouch = matchMedia("(pointer: coarse)").matches;
+  const STORY_END = 14.5;
   let lastTick = 0,
     scenePosition = 0,
     introStarted = false,
-    allowDirectJump = 0;
-  const scrollRange = () =>
-    Math.max(1, document.documentElement.scrollHeight - innerHeight);
-  const readPosition = () => (scrollY / scrollRange()) * STORY_END;
+    allowDirectJump = 0,
+    maxScroll = 1;
+  const updateScrollRange = () => {
+    maxScroll = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  };
+  const scrollRange = () => maxScroll;
+  const readPosition = () => (scrollY / maxScroll) * STORY_END;
   function goScene(position, allowJump = false) {
     if (allowJump) allowDirectJump = 8;
     scrollTo({
-      top: (clamp(position, 0, STORY_END) / STORY_END) * scrollRange(),
-      behavior: "auto",
+      top: (clamp(position, 0, STORY_END) / STORY_END) * maxScroll,
+      behavior: allowJump && !RM ? "smooth" : "auto",
     });
   }
   history.scrollRestoration = "manual";
@@ -87,18 +91,12 @@ export function createExperience(root) {
     if (Number.isFinite(position)) goScene(position, true);
   });
   listen(window, "hashchange", () => {
-    if (window.location.hash === "#registration") goScene(23.4, true);
+    if (window.location.hash === "#registration" || window.location.hash === "#tlv") {
+      triggerUniverseRedirect("/universe#schedule");
+    }
   });
-  const tcol = $("#tcol");
-  let colH = 0;
-  const rows = $$(".row");
-  let rowCY = [];
   function lay() {
-    colH = tcol.offsetHeight;
-    rowCY = rows.map((r) => {
-      const st = r.querySelector(".strip");
-      return r.offsetTop + st.offsetTop + st.offsetHeight / 2;
-    });
+    updateScrollRange();
     dirty = true;
   }
   listen(window, "resize", lay);
@@ -125,13 +123,31 @@ export function createExperience(root) {
       } catch (e) {
         this.ctx = null;
       }
-      const t = new Audio(AUDIO_TRACK);
+      const globalAudio = typeof window !== "undefined" ? (window as any).__INCURSION_AUDIO__ : null;
+      const t = globalAudio?.element || new Audio(AUDIO_TRACK);
       t.preload = "auto";
-      t.volume = 0;
-      t.muted = !this.on;
+      t.loop = true;
+      if (globalAudio?.isPlaying) {
+        this.on = true;
+        this.want = true;
+      } else {
+        t.volume = 0;
+        t.muted = !this.on;
+      }
       listen(t, "error", () => {
         this.hasTrk = false;
         upd();
+      });
+      // Guarantee continuous unbroken looping - only when whole track is completed (~1:52 / ~113s)
+      listen(t, "ended", () => {
+        if (!this.on || !this.want) return;
+        try {
+          if (!t.duration || t.currentTime >= t.duration - 1.5) {
+            t.currentTime = 0;
+          }
+          const p = t.play();
+          if (p && p.catch) p.catch(() => {});
+        } catch (e) {}
       });
       this.trk = t;
     },
@@ -243,6 +259,11 @@ export function createExperience(root) {
       const t = this.trk;
       if (!t) return;
       cancelEvery(this._f);
+      if (!ms || ms <= 0) {
+        t.volume = clamp(to);
+        if (then) then();
+        return;
+      }
       const from = t.volume,
         st = performance.now();
       this._f = every(() => {
@@ -252,20 +273,23 @@ export function createExperience(root) {
           cancelEvery(this._f);
           if (then) then();
         }
-      }, 50);
+      }, 30);
     },
     play(from, vol, ms) {
       const t = this.trk;
       if (!t || !this.hasTrk) return;
-      if (from != null) {
+      // Never re-seek if already playing smoothly; only restore position when paused and different
+      if (from != null && t.paused && Math.abs((t.currentTime || 0) - from) > 0.5) {
         try {
           t.currentTime = from;
         } catch (e) { }
       }
       this.want = true;
-      const p = t.play();
-      if (p && p.catch) p.catch(() => { });
-      this.fade(vol, ms);
+      if (t.paused) {
+        const p = t.play();
+        if (p && p.catch) p.catch(() => { });
+      }
+      this.fade(vol ?? 1.0, ms || 300);
     },
     stop(ms) {
       this.want = false;
@@ -279,9 +303,14 @@ export function createExperience(root) {
         this.master.gain.setTargetAtTime(b ? 1 : 0, this.ctx.currentTime, 0.05);
       if (this.trk) this.trk.muted = !b;
       if (b && this.ctx?.state === "suspended") this.ctx.resume().catch(() => {});
-      iv.muted = !b;
+      iv.muted = true;
       if (typeof window !== "undefined") {
         sessionStorage.setItem("incursion_audio_enabled", b ? "true" : "false");
+        const globalAudio = (window as any).__INCURSION_AUDIO__;
+        if (globalAudio) {
+          if (b) globalAudio.play(1.0, 250);
+          else globalAudio.pause(250);
+        }
         window.dispatchEvent(new CustomEvent("incursion:audio-state", {
           detail: { enabled: b },
         }));
@@ -303,6 +332,13 @@ export function createExperience(root) {
       : "The music track failed to load, so only the synthesised cues will play";
   }
   upd();
+  listen(window, "incursion:audio-state", (event: any) => {
+    const enabled = event.detail?.enabled;
+    if (typeof enabled === "boolean" && enabled !== AC.on) {
+      AC.on = enabled;
+      upd();
+    }
+  });
   listen($("#snd"), "click", (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -345,101 +381,208 @@ export function createExperience(root) {
       fl.remove();
     }, 900);
   }
+  let audioUnlocked = false;
+  const unlockAudio = () => {
+    if (disposed || audioUnlocked) return;
+    audioUnlocked = true;
+    const soundPrompt = $("#sound-prompt");
+    if (soundPrompt) soundPrompt.classList.remove("is-visible");
+    AC.init();
+    if (AC.ctx?.state === "suspended") {
+      AC.ctx.resume().catch(() => {});
+    }
+    AC.set(true);
+    if (AC.trk) {
+      AC.trk.muted = false;
+      if (AC.trk.paused) {
+        AC.play(null, 1.0, 300);
+      } else {
+        AC.fade(1.0, 300);
+      }
+    }
+  };
+
   function finish() {
     if (disposed || done) return;
     done = true;
     ready = true;
     iv.pause();
-    $("#skip").style.display = "none";
+    const prompt = $("#sound-prompt");
+    if (prompt) prompt.classList.remove("is-visible");
+    const skip = $("#skip");
+    if (skip) skip.style.display = "none";
     document.documentElement.classList.remove("lock");
-    iv.style.transition = "opacity 0.6s";
-    iv.style.opacity = 0;
-    $("#term").classList.add("out");
-    $("#term").inert = true;
-    triggerFlash();
-    AC.drone();
-    if (AC.on && AC.trk && trk === 0) {
-      trk = 1;
-      AC.play(0, 1.0, 400);
+    iv.style.transition = "opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1)";
+    iv.style.opacity = "0";
+    const term = $("#term");
+    if (term) {
+      term.classList.add("out");
+      term.inert = true;
     }
-    $("#snd").focus({ preventScroll: true });
+    try {
+      triggerFlash();
+    } catch (e) {}
+    // soundtrack.mp3 continues playing seamlessly without interruption
+    if (AC.on && AC.trk && AC.trk.paused) {
+      AC.play(null, 1.0, 400);
+    }
+    $("#snd")?.focus?.({ preventScroll: true });
     dirty = true;
   }
   function enter(snd) {
     introStarted = true;
-    iv.muted = !snd;
-    iv.volume = snd ? 1 : 0;
+    iv.muted = true;
+    iv.volume = 0;
+
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("incursion_audio_enabled", snd ? "true" : "false");
+      const isMobile = window.innerWidth <= 768;
+      const targetSrc = isMobile ? "/media/intro-mobile.mp4" : "/media/intro.mp4";
+      if (!iv.currentSrc?.endsWith(targetSrc) && (!iv.src || !iv.src.endsWith(targetSrc))) {
+        iv.src = targetSrc;
+      }
     }
+
+    const stored = typeof window !== "undefined" ? sessionStorage.getItem("incursion_audio_enabled") : null;
+    const shouldAudio = stored !== null ? stored === "true" : snd;
+
     AC.init();
-    AC.set(snd);
-    if (snd && AC.ctx?.state === "suspended") {
-      AC.ctx.resume().catch(() => {});
-    }
-    if (snd && AC.trk && trk === 0) {
-      trk = 1;
-      AC.play(0, 1.0, 400);
-    }
-    const p = iv.play();
-    if (p && p.catch) {
-      p.catch(() => {
-        if (disposed || done) return;
-        iv.muted = true;
-        iv.play().catch(() => {});
-        const resumeExperienceAudio = () => {
-          if (disposed || done || !AC.on) return;
-          if (AC.ctx?.state === "suspended") {
-            AC.ctx.resume().catch(() => {});
-          }
-          if (AC.trk) {
-            AC.play(AC.trk.currentTime || 0, 1.0, 400);
-          }
-          iv.muted = false;
-          iv.volume = 1;
-          iv.play().catch(() => {});
-        };
-        listen(window, "pointerdown", resumeExperienceAudio, { once: true });
-        listen(window, "keydown", resumeExperienceAudio, { once: true });
+    AC.set(shouldAudio);
+
+    const savedTime = typeof window !== "undefined" ? sessionStorage.getItem("incursion_audio_time") : null;
+    const initialTime = savedTime && !isNaN(parseFloat(savedTime)) ? parseFloat(savedTime) : (AC.trk?.currentTime || 0);
+
+    // Start video playback (muted so it autoplays 100% reliably)
+    iv.play().catch(() => {});
+
+    const soundPrompt = $("#sound-prompt");
+    const term = $("#term");
+
+    const unlockEvents = [
+      "pointerdown", "touchstart", "touchend", "mousedown",
+      "click", "wheel", "scroll", "keydown"
+    ];
+    const onUserGesture = () => {
+      unlockAudio();
+      unlockEvents.forEach((ev) => {
+        window.removeEventListener(ev, onUserGesture);
+        if (term) term.removeEventListener(ev, onUserGesture);
+        if (soundPrompt) soundPrompt.removeEventListener(ev, onUserGesture);
       });
+    };
+
+    if (shouldAudio && AC.trk) {
+      AC.play(initialTime, 1.0, 400);
+      const playPromise = AC.trk.play();
+      if (playPromise && playPromise.catch) {
+        playPromise.then(() => {
+          if (soundPrompt) soundPrompt.classList.remove("is-visible");
+        }).catch(() => {
+          // Autoplay blocked by browser policy until interaction
+          if (soundPrompt && !done) soundPrompt.classList.add("is-visible");
+        });
+      }
+    } else {
+      if (soundPrompt && !done) soundPrompt.classList.add("is-visible");
     }
+
+    unlockEvents.forEach((ev) => {
+      listen(window, ev, onUserGesture, { passive: true });
+      if (term) listen(term, ev, onUserGesture, { passive: true });
+      if (soundPrompt) listen(soundPrompt, ev, onUserGesture, { passive: true });
+    });
   }
 
   listen(iv, "ended", finish);
   listen(iv, "error", finish);
-  $("#skip").style.display = "block";
-  listen($("#skip"), "click", finish);
-  enter(true);
-  /* ---- registration / schedule buttons ---- */
-  $$("a[href*='/universe']").forEach((link) => {
-    listen(link, "click", () => {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("incursion_audio_enabled", AC.on ? "true" : "false");
-        sessionStorage.setItem("incursion_audio_time", String(AC.trk?.currentTime || 0));
+  const skipBtn = $("#skip");
+  if (skipBtn) {
+    skipBtn.style.display = "inline-flex";
+    let skipped = false;
+    const triggerSkip = (e) => {
+      if (skipped || done) return;
+      skipped = true;
+      if (e) {
+        if (typeof e.preventDefault === "function" && e.cancelable) e.preventDefault();
+        if (typeof e.stopPropagation === "function") e.stopPropagation();
       }
+      try {
+        unlockAudio();
+      } catch (err) {}
+      finish();
+    };
+    listen(skipBtn, "click", triggerSkip);
+    listen(skipBtn, "touchend", triggerSkip);
+    listen(skipBtn, "pointerdown", triggerSkip);
+  }
+  enter(true);
+
+  // Resume audio on the first gesture after intro completes if still blocked
+  const unlockOnPageTouch = () => {
+    if (AC.on && AC.trk && (AC.trk.paused || AC.trk.muted)) {
+      AC.init();
+      if (AC.ctx?.state === "suspended") AC.ctx.resume().catch(() => {});
+      AC.trk.muted = false;
+      if (AC.trk.paused) {
+        AC.play(null, 1.0, 300);
+      } else {
+        AC.fade(1.0, 300);
+      }
+    }
+  };
+  ["pointerdown", "touchstart", "click"].forEach((ev) => {
+    listen(window, ev, unlockOnPageTouch, { passive: true, once: true });
+  });
+  /* ---- universe smooth redirect controller ---- */
+  let redirected = false;
+  function triggerUniverseRedirect(targetUrl = "/universe") {
+    if (redirected) return;
+    redirected = true;
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("incursion_audio_enabled", AC.on ? "true" : "false");
+      sessionStorage.setItem("incursion_audio_time", String(AC.trk?.currentTime || 0));
+    }
+    try {
+      AC.impact(0.55);
+    } catch { }
+
+    const overlay = $("#universe-portal-transition") || document.getElementById("universe-portal-transition");
+    if (overlay) {
+      overlay.classList.add("is-active");
+    }
+    // Cinematic 1-second pause on the Doomsday "Welcome to the Universe" transition
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 1200);
+  }
+
+  $$("[data-universe-link], a[href*='/universe']").forEach((link) => {
+    listen(link, "click", (e) => {
+      e.preventDefault();
+      const target = link.getAttribute("href") || "/universe";
+      triggerUniverseRedirect(target);
     });
   });
+
   $$(".reg").forEach((a) => {
-    if (a.getAttribute("href")?.startsWith("/universe")) return;
     if (REGISTER_URL) {
       a.href = REGISTER_URL;
       a.target = "_blank";
       a.rel = "noopener";
-      if (a.closest("#c5")) a.textContent = "Register";
-    } else
+    } else {
       listen(a, "click", (e) => {
         e.preventDefault();
-        history.replaceState(null, "", "#registration");
-        goScene(23.4, true);
+        triggerUniverseRedirect("/universe#schedule");
       });
+    }
   });
+
   $$('[data-scene-target]').forEach((link) => {
     listen(link, "click", (event) => {
       event.preventDefault();
-      const position = Number(link.dataset.sceneTarget);
-      goScene(Number.isFinite(position) ? position : 13.9, true);
+      triggerUniverseRedirect("/universe#schedule");
     });
   });
+
   let H = innerHeight,
     dirty = true,
     lv = -1;
@@ -450,6 +593,7 @@ export function createExperience(root) {
   }
   listen(window, "resize", resize);
   resize();
+
   /* ---- scene tick ---- */
   const THR = $("#throne"),
     tw2 = $("#tw2"),
@@ -457,72 +601,37 @@ export function createExperience(root) {
     vg = $("#vg"),
     scrim = $("#scrim"),
     stageTease = $("#stage-tease"),
-    stageEndTease = $("#registration"),
     tl = $$("[data-w]").map((e) => ({
       e,
       w: e.dataset.w.split(",").map(Number),
     }));
   const hdr = $("#hdr"),
-    heroStage = $("#hero");
-  let heroSceneActive = false;
-  let heroTimers = [];
-  function setHeroSceneActive(active) {
-    if (active === heroSceneActive) return;
-    heroSceneActive = active;
-    if (active) {
-      heroTimers = [
-        later(() => heroSceneActive && AC.glitch(), 700),
-        later(() => heroSceneActive && AC.impact(0.8), 1420),
-      ];
-    } else {
-      heroTimers.forEach(cancelLater);
-      heroTimers = [];
-    }
-    window.dispatchEvent(
-      new CustomEvent("incursion:hero-active", { detail: { active } }),
-    );
-  }
-  const CH = [
-    [$("#tlv"), 13.8, 22.6],
-  ].map((a) => ({ el: a[0], s: a[1], e: a[2], seen: false }));
-  const scrollCue = $("#hero-scroll-cue");
-  const updateScrollCue = () => {
-    scrollCue?.classList.toggle("is-hidden", scrollY > 50);
-  };
-  listen(window, "scroll", updateScrollCue, { passive: true });
-  updateScrollCue();
+    heroStage = $("#hero"),
+    scrollCue = $("#hero-scroll-cue");
+
   let reveal = 0,
-    redirected = false,
-    firstScrollReveal = false,
-    timelineVisited = false;
-  listen(window, "wheel", (event) => {
-    if (!ready || firstScrollReveal || event.deltaY <= 0 || readPosition() >= 10.3) return;
-    event.preventDefault();
-    firstScrollReveal = true;
-    goScene(10.9);
-  }, { passive: false });
+    firstScrollReveal = false;
+
   function tick() {
     scheduleFrame(tick);
     const now = performance.now(),
       dt = Math.min(0.05, (now - (lastTick || now)) / 1000);
     lastTick = now;
-    let targetPosition = readPosition();
-    if (!allowDirectJump && Math.abs(targetPosition - scenePosition) > 2.2) {
-      targetPosition = clamp(
-        scenePosition + Math.sign(targetPosition - scenePosition) * 1.8,
-        0,
-        STORY_END,
-      );
-      goScene(targetPosition);
-    } else {
-      allowDirectJump = Math.max(0, allowDirectJump - 1);
+    const targetPosition = readPosition();
+    if (allowDirectJump > 0) {
+      scenePosition = targetPosition;
+      allowDirectJump--;
     }
+    // High-performance smooth glide: silky, responsive, and jitter-free
+    const lerpRate = isTouch ? 6.8 : 6.2;
     scenePosition = RM
       ? targetPosition
-      : lerp(scenePosition, targetPosition, 1 - Math.exp(-dt * 9));
-    if (Math.abs(targetPosition - scenePosition) < 0.002)
+      : lerp(scenePosition, targetPosition, 1 - Math.exp(-dt * lerpRate));
+    if (Math.abs(targetPosition - scenePosition) < 0.0004) {
       scenePosition = targetPosition;
-    else dirty = true;
+    } else {
+      dirty = true;
+    }
     const raw = scenePosition,
       v = raw;
     window.dispatchEvent(new CustomEvent("incursion:scroll", { detail: { v } }));
@@ -533,12 +642,12 @@ export function createExperience(root) {
     /* chrome */
     if (hdr) hdr.style.opacity = ready ? 1 : 0;
     topButton.classList.toggle("on", ready && raw > 0.7);
-    /* throne room: push-in toward the figure, timed dissolve to the close-up */
-    const em = ss(0.2, 1.8, v),
-      pu = ss(1.8, 4.8, v),
-      S = 1 + 0.8 * pu;
-    const co = ss(3.8, 5.3, v),
-      tO = 1 - ss(10.0, 10.8, v);
+    /* throne room: continuous push-in toward the figure, dissolving gradually to the close-up */
+    const em = ss(0.2, 2.0, v),
+      pu = ss(1.0, 5.4, v),
+      S = 1 + 0.65 * pu;
+    const co = ss(2.8, 6.0, v),
+      tO = 1 - ss(9.6, 11.4, v);
     if (!ready) {
       THR.style.opacity = "0";
       THR.style.visibility = "hidden";
@@ -546,19 +655,10 @@ export function createExperience(root) {
         stageTease.style.opacity = "0";
         stageTease.style.visibility = "hidden";
       }
-      if (stageEndTease) {
-        stageEndTease.style.opacity = "0";
-        stageEndTease.style.visibility = "hidden";
-      }
     } else if (stageTease) {
       const teaseOpacity = 1 - ss(0.8, 3.2, v);
       stageTease.style.opacity = teaseOpacity;
       stageTease.style.visibility = teaseOpacity > 0.002 ? "visible" : "hidden";
-    }
-    if (ready && stageEndTease) {
-      const endTeaseOpacity = ss(22.7, 24.2, v);
-      stageEndTease.style.opacity = endTeaseOpacity;
-      stageEndTease.style.visibility = endTeaseOpacity > 0.002 ? "visible" : "hidden";
     }
     if (ready) vis(THR, tO);
     if (co > 0.5 && !reveal) {
@@ -571,20 +671,22 @@ export function createExperience(root) {
     }
     const rt = reveal ? (now - reveal) / 1000 : 0;
     if (tO > 0) {
-      const j = RM ? 0 : 0.15 + 0.25 * pu,
-        jx = (Math.sin(v * 11) + Math.sin(v * 6.3)) * j,
-        jy = Math.cos(v * 8.7) * j;
-      tw2.style.transform = `translate(${jx}px,${jy}px) scale(${S})`;
-      tw2.style.filter = `brightness(${0.5 + 0.5 * em})${RM ? "" : ` blur(${0.25 * pu * pu}px)`}`;
-      tw2.style.visibility = co < 0.999 ? "visible" : "hidden";
-      tc.style.opacity = co;
-      tc.style.transform = `scale(${1 + 0.07 * ss(5.6, 6.8, v)})`;
-      tc.style.filter = `brightness(${1 - 0.28 * ss(6.8, 7.4, v) * (1 - ss(9.6, 10.0, v))})`;
-      const r = lerp(lerp(30, 74, em) * (1 - 0.5 * pu), 34, co);
-      vg.style.setProperty("--r", r + "%");
-      vg.style.setProperty("--fx", lerp(55, 52, co) + "%");
-      vg.style.setProperty("--fy", lerp(58, 36, co) + "%");
-      scrim.style.opacity = ss(6.6, 7.2, v) * (1 - ss(9.4, 9.9, v));
+      const j = RM ? 0 : 0.06 + 0.12 * pu,
+        jx = (Math.sin(v * 7.3) + Math.sin(v * 4.1)) * j,
+        jy = Math.cos(v * 5.7) * j;
+      tw2.style.transform = `translate3d(${jx.toFixed(2)}px,${jy.toFixed(2)}px,0) scale(${S.toFixed(4)})`;
+      tw2.style.filter = `brightness(${(0.52 + 0.38 * em).toFixed(3)}) contrast(0.95) saturate(0.9)`;
+      tw2.style.visibility = co < 0.995 ? "visible" : "hidden";
+      tc.style.opacity = co.toFixed(3);
+      const tcScale = (1.0 + 0.12 * ss(3.0, 9.8, v)).toFixed(4);
+      tc.style.transform = `translate3d(0,0,0) scale(${tcScale})`;
+      const tcDim = ss(6.4, 7.8, v) * (1 - ss(9.6, 10.1, v));
+      tc.style.filter = `brightness(${(0.96 - 0.18 * tcDim).toFixed(3)}) contrast(0.95) saturate(0.9)`;
+      const r = lerp(lerp(28, 72, em) * (1 - 0.42 * pu), 36, co);
+      vg.style.setProperty("--r", r.toFixed(1) + "%");
+      vg.style.setProperty("--fx", lerp(55, 52, co).toFixed(1) + "%");
+      vg.style.setProperty("--fy", lerp(58, 40, co).toFixed(1) + "%");
+      scrim.style.opacity = (ss(6.4, 7.4, v) * (1 - ss(9.4, 9.9, v))).toFixed(3);
     }
     /* the warning text fades in and out between the throne close-up and the hero reveal */
     tl.forEach((o) => {
@@ -593,72 +695,35 @@ export function createExperience(root) {
       o.e.style.opacity = t;
       o.e.style.visibility = t > 0.002 ? "visible" : "hidden";
     });
-    /* The 3D Doctor Doom mask is only active while the timeline is visible. */
-    setHeroSceneActive(ready && v >= 13.8 && v <= 22.6);
-    if (v >= 13.8 && v < 22.7) timelineVisited = true;
 
-    /* The opening hero text and CTA appear, then yield to the timeline */
-    const heroOpacity = ss(10.3, 10.9, v) * (1 - ss(13.4, 14.0, v));
+    /* The opening hero text and CTA appear smoothly and remain prominently visible */
+    const heroOpacity = ss(9.8, 11.4, v);
     if (heroStage) {
       vis(heroStage, heroOpacity);
       heroStage.style.transform = "none";
     }
-    /* timeline (scroll-linked reveals over a star field) + closing scene */
-    CH.forEach((k, i) => {
-      const o =
-        ss(k.s - 0.25, k.s + 0.25, v) *
-        (i < 1 ? 1 - ss(k.e - 0.25, k.e + 0.25, v) : 1),
-        u = clamp((v - k.s) / (k.e - k.s));
-      vis(k.el, o);
-      if (o > 0.5 && !k.seen) {
-        k.seen = true;
-        AC.swell();
-      } else if (v < k.s - 0.6) k.seen = false;
-      if (i === 0 && o > 0) {
-        if (!colH) lay();
-        const ty = lerp(innerHeight * 0.66, -(colH - innerHeight * 0.55), u);
-        tcol.style.transform = `translateY(${ty}px)`;
-        rows.forEach((r, j) => {
-          const y = rowCY[j] + ty,
-            e = RM ? 1 : ss(H * 0.98, H * 0.58, y),
-            f = RM ? 0.5 : 1 - clamp(Math.abs(y - H * 0.5) / (H * 0.5)),
-            st = (a, m) => clamp((e - a) * m).toFixed(3);
-          r.style.setProperty("--e", e.toFixed(3));
-          r.style.setProperty("--f", f.toFixed(3));
-          r.style.setProperty("--e1", st(0.2, 2.2));
-          r.style.setProperty("--e2", st(0.3, 2.2));
-          r.style.setProperty("--e3", st(0.4, 2.6));
-          r.style.setProperty("--e4", st(0.52, 2.6));
-          r.style.setProperty("--e5", st(0.62, 2.8));
-          r.classList.toggle("is-visible", RM || e > 0.035);
-        });
-      }
-    });
-    /*
-     * Stage 1 ends on the timeline.
-     * The transition to /universe is intentionally disabled until Stage 2.
-     *
-     * if (v >= 22.7 && timelineVisited && !redirected) {
-     *   redirected = true;
-     *   sessionStorage.setItem("incursion_audio_enabled", AC.on ? "true" : "false");
-     *   sessionStorage.setItem("incursion_audio_time", String(AC.trk?.currentTime || 0));
-     *   window.location.href = "/universe";
-     * }
-     */
-      if (v < 0.05 && trk >= 1) {
-        trk = 0;
-        reveal = 0;
-        AC.stop(400);
-      }
-      if (trk >= 1 && reveal && AC.trk && AC.trk.volume > 0) {
-        const q = 1.0;
-        if (AC._q !== q && rt > 4.5) {
-          AC._q = q;
-          AC.fade(q, 1000);
-        }
+
+    /* Scroll cue visibility tied to hero stage */
+    if (scrollCue) {
+      const cueOpacity = ss(10.8, 11.8, v);
+      scrollCue.style.opacity = String(cueOpacity);
+      scrollCue.style.pointerEvents = cueOpacity > 0.2 ? "auto" : "none";
+    }
+
+    /* As the user scrolls past the hero stage, smoothly transition directly into /universe */
+    if (v >= 13.5 && !redirected) {
+      triggerUniverseRedirect("/universe");
+    }
+
+    if (reveal && AC.trk && AC.trk.volume > 0) {
+      const q = 1.0;
+      if (AC._q !== q && rt > 4.5) {
+        AC._q = q;
+        AC.fade(q, 1000);
       }
     }
-    scheduleFrame(tick);
+  }
+  scheduleFrame(tick);
 
     return () => {
       disposed = true;
@@ -668,7 +733,8 @@ export function createExperience(root) {
       intervals.forEach(clearInterval);
       collisionSound.dispose();
       if (iv && typeof iv.pause === "function") iv.pause();
-      if (AC.trk) {
+      const globalAudio = typeof window !== "undefined" ? (window as any).__INCURSION_AUDIO__ : null;
+      if (AC.trk && AC.trk !== globalAudio?.element) {
         AC.trk.pause();
         AC.trk.removeAttribute("src");
         AC.trk.load();
